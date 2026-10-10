@@ -1,10 +1,10 @@
 name: DEV Task
-description: Formal Personal Finance Manager task tracked by 00 Project Control
+description: Standard task template for Personal Finance Manager
 title: "DEV-XXX — "
 body:
   - type: markdown
     attributes:
-      value: Use the DEV number from docs/05-development-plan.md. 00 owns task approval and acceptance. Never include secrets.
+      value: Use a DEV number from the development plan. Never include secrets.
   - type: input
     id: task_id
     attributes:
@@ -41,7 +41,7 @@ body:
     id: dependencies
     attributes:
       label: Dependencies / start gates
-      description: Reference DEV IDs, Issue/PR links, UI Spec or architecture decisions; write None if not applicable.
+      description: List prerequisite DEV IDs, Issues, PRs or decisions.
       placeholder: DEV-002 final acceptance and merge
     validations:
       required: true
@@ -70,7 +70,7 @@ body:
     id: acceptance
     attributes:
       label: Acceptance criteria
-      description: Use Markdown checkboxes; distinguish automated CI from real-environment QA.
+      description: Use checkboxes. Distinguish CI from live QA.
       value: |
         - [ ] Scope-specific acceptance criteria
         - [ ] lint / test / build / CI (if applicable)
@@ -89,6 +89,6 @@ body:
     id: decision
     attributes:
       label: 00 control decision
-      description: Initial authorization or constraints. Final acceptance is recorded later in a comment.
+      description: Record initial authorization. Final acceptance goes in a comment.
     validations:
       required: false
