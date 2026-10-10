@@ -19,7 +19,10 @@ concurrency:
 
 jobs:
   feasibility:
-    if: github.repository == 'wumoye/personal-finance' && github.ref == 'refs/heads/infra/infra-qa-001-phase-a'
+    if: >-
+      github.repository == 'wumoye/personal-finance' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/infra/infra-qa-001-phase-a'))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
