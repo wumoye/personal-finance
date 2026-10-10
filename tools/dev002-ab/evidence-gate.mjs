@@ -188,7 +188,7 @@ function inspect(value, depth = 0) {
       assert(!prohibited.test(k), 'forbidden key');
       assert(
         allowed.has(k) ||
-          /^(?:node_modules\/|@[a-z0-9@._/:-]+|[a-z][a-zA-Z0-9@./_-]*$|baselineVs[AB]$|\d+\.\d+\.\d+$)/.test(
+          /^(?:node_modules\/|@[a-z0-9@._/:-]+|[A-Za-z][a-zA-Z0-9@./_-]*$|baselineVs[AB]$|\d+\.\d+\.\d+$)/.test(
             k,
           ),
         'unexpected key',
