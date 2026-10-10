@@ -5,7 +5,16 @@ assert.match(workflow, /permissions:\s*\n\s+contents: read/);
 assert.match(workflow, /persist-credentials: false/);
 assert.match(workflow, /ref: \$\{\{ github\.sha \}\}/);
 assert.match(workflow, /github\.repository == 'wumoye\/personal-finance'/);
-assert.match(workflow, /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/);
-assert.match(workflow, /github\.event_name == 'push' && github\.ref == 'refs\/heads\/infra\/dev002-phase-b0'/);
-assert.doesNotMatch(workflow, /pull_request_target:|secrets\.|environment:|AUTH_E2E_TEST_PASSWORD|service_role|sb_secret_/i);
+assert.match(
+  workflow,
+  /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/,
+);
+assert.match(
+  workflow,
+  /github\.event_name == 'push' && github\.ref == 'refs\/heads\/infra\/dev002-phase-b0'/,
+);
+assert.doesNotMatch(
+  workflow,
+  /pull_request_target:|secrets\.|environment:|AUTH_E2E_TEST_PASSWORD|service_role|sb_secret_/i,
+);
 console.log('B0 trusted checkout and no-credentials guard: PASS');
