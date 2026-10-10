@@ -1,0 +1,55 @@
+name: DEV-002 Phase B-0 dependency compatibility
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [infra/dev002-phase-b0]
+    paths:
+      - .github/workflows/auth-b0-dependencies.yml
+      - tools/auth-e2e-b0/audit-compat.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  assess:
+    if: >-
+      github.repository == 'wumoye/personal-finance' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/infra/dev002-phase-b0'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout fixed auth PR head in isolated no-secret runner
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          ref: b7e0d271d575577d1f5c74a3a66d7383aa74e793
+      - name: Verify audited auth head
+        run: test "$(git rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
+      - name: Checkout B-0 assessment script to separate verified directory
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          path: b0-trusted-scripts
+      - name: Verify B-0 source HEAD
+        env:
+          B0_HEAD: ${{ github.sha }}
+        run: test "$(git -C b0-trusted-scripts rev-parse HEAD)" = "$B0_HEAD"
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.19.0
+      - name: Audit baseline and ephemeral candidate
+        env:
+          B0_AUDIT_REPORT_DIR: ${{ runner.temp }}/auth-b0-audit
+        run: node b0-trusted-scripts/tools/auth-e2e-b0/audit-compat.mjs
+      - name: Upload summary only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: auth-b0-audit-${{ github.sha }}
+          path: ${{ runner.temp }}/auth-b0-audit/audit-compat-summary.json
+          if-no-files-found: warn
+          retention-days: 7
