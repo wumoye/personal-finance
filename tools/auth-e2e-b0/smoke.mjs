@@ -19,7 +19,8 @@ try {
   data.chromium = browser.version();
   const page = await browser.newPage();
   await page.goto('about:blank');
-  if (await page.evaluate(() => 6 * 7) !== 42) throw new Error('Smoke failed');
+  if ((await page.evaluate(() => 6 * 7)) !== 42)
+    throw new Error('Smoke failed');
   data.smoke = 'about:blank';
   data.result = 'PASS';
   console.log('B0 Chromium about:blank smoke: PASS');
