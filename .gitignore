@@ -44,3 +44,10 @@ Thumbs.db
 
 # VS Code local settings
 .vscode/
+# All environment variants (only the placeholder template is tracked)
+.env.*
+!.env.example
+
+# Generated files
+src/generated/
+*.tsbuildinfo

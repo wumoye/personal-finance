@@ -1,0 +1,10 @@
+// DEV-001 has no business models or migrations.
+// Models, Decimal fields and ownership constraints belong to their later DEV tasks.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
