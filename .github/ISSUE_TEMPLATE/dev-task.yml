@@ -1,6 +1,6 @@
 name: DEV Task
 description: Standard task template for Personal Finance Manager
-title: "DEV-XXX — "
+title: 'DEV-XXX — '
 body:
   - type: markdown
     attributes:
