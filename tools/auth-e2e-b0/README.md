@@ -13,3 +13,5 @@ To check schema without browsers: `node tools/auth-e2e-b0/check-boundary.mjs` an
 ## Ephemeral dependency trial
 
 The companion `.github/workflows/auth-b0-dependencies.yml` checks out PR #3 at the explicitly pinned `b7e0d271d575577d1f5c74a3a66d7383aa74e793` in a sibling `auth-snapshot/` directory, without credentials, and evaluates candidate transitive overrides (`deepmerge-ts@8.0.2`, `mysql2@3.24.5`) only inside the disposable runner. It never commits lockfile or dependency changes. `audit-compat-summary.json` contains only command exit codes and aggregate vulnerability counts, not raw npm output. Candidate success is not a production compatibility approval: 00 and 05 must decide whether to proceed.
+
+Final review requires the same exact B-0 HEAD to pass its own smoke, isolated audit assessment and unchanged repository CI. No candidate override is approved for feature/auth by a smoke result.

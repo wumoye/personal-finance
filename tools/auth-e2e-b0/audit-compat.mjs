@@ -5,6 +5,7 @@ import { join } from 'node:path';
 const cwd = process.cwd();
 const output = process.env.B0_AUDIT_REPORT_DIR || '/tmp/auth-b0-audit';
 const expectedHead = 'b7e0d271d575577d1f5c74a3a66d7383aa74e793';
+// Dependency changes are confined to this temporary checkout; never push generated files.
 const report = {
   task: 'DEV-002',
   phase: 'B-0',
