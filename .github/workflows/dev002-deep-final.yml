@@ -1,0 +1,55 @@
+name: DEV-002 final bounded deep configuration evidence
+on:
+  push:
+    branches: [infra/dev002-deep-config-final]
+    paths:
+      - '.github/workflows/dev002-deep-final.yml'
+      - 'tools/dev002-deep/**'
+permissions:
+  contents: read
+jobs:
+  check:
+    if: github.repository == 'wumoye/personal-finance' && github.event_name == 'push' && github.ref == 'refs/heads/infra/dev002-deep-config-final'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          path: baseline
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 1d8bed2ba11c9d2e64482d2b48b278f0147650cb
+          path: candidate
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: harness
+          persist-credentials: false
+      - name: Verify exact source and harness SHA
+        env:
+          HARNESS_SHA: ${{ github.sha }}
+        run: |
+          test "$(git -C baseline rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          test "$(git -C candidate rev-parse HEAD)" = 1d8bed2ba11c9d2e64482d2b48b278f0147650cb
+          test "$(git -C harness rev-parse HEAD)" = "$HARNESS_SHA"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.19.0
+      - name: Actual Prisma deep configuration test
+        run: node harness/tools/dev002-deep/final-check.mjs
+      - name: Check exact output and no sensitive values
+        env:
+          EVIDENCE_FILE: ${{ runner.temp }}/dev002-deep-evidence/deep-result.json
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';const p=process.env.EVIDENCE_FILE;const v=JSON.parse(fs.readFileSync(p,'utf8'));if(v.task!=='DEV-002'||v.sourceHeads.baseline!=='b7e0d271d575577d1f5c74a3a66d7383aa74e793'||v.sourceHeads.candidate!=='1d8bed2ba11c9d2e64482d2b48b278f0147650cb'||v.workflowHead!==process.env.GITHUB_SHA||!['PASS','FAIL','NOT_COVERED'].includes(v.status)||JSON.stringify(v).match(/password|refresh_token|authorization|service_role|-----BEGIN/i))process.exit(1);console.log('EVIDENCE_GATE_PASS status='+v.status)"
+      - name: Upload one validated JSON
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev002-final-deep-${{ github.sha }}
+          path: ${{ runner.temp }}/dev002-deep-evidence/deep-result.json
+          if-no-files-found: error
+          retention-days: 7
