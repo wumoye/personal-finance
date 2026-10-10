@@ -22,7 +22,7 @@ const top = new Set([
   'lintRemediation',
 ]);
 const prohibited =
-  /(password|passwd|secret|authorization|access[_-]?token|refresh[_-]?token|cookie|api[_-]?key|private[_-]?key|service[_-]?role|bearer|storageState|\.env(?:\b|\/)|database[_-]?url|direct[_-]?url|HAR[_-]?archive)/i;
+  /(password|passwd|credential|secret|authorization|access[_-]?token|refresh[_-]?token|cookie|api[_-]?key|private[_-]?key|service[_-]?role|bearer|storageState|\.env(?:\b|\/)|database[_-]?url|direct[_-]?url|HAR[_-]?archive)/i;
 const allowed = new Set([
   'task',
   'phase',
