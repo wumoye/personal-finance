@@ -1,76 +1,76 @@
-name: "DEV Task"
-description: "Formal Personal Finance Manager task tracked by 00 Project Control"
+name: DEV Task
+description: Formal Personal Finance Manager task tracked by 00 Project Control
 title: "DEV-XXX — "
 body:
   - type: markdown
     attributes:
-      value: "Use the DEV number from docs/05-development-plan.md. 00 owns task approval and acceptance. Never include secrets."
+      value: Use the DEV number from docs/05-development-plan.md. 00 owns task approval and acceptance. Never include secrets.
   - type: input
     id: task_id
     attributes:
-      label: "Task ID"
-      description: "Stable identifier, e.g. DEV-003"
-      placeholder: "DEV-003"
+      label: Task ID
+      description: Stable identifier, e.g. DEV-003
+      placeholder: DEV-003
     validations:
       required: true
   - type: dropdown
     id: domain
     attributes:
-      label: "Responsible domain"
+      label: Responsible domain
       options:
-        - "01｜Requirements & Business Rules"
-        - "02｜Architecture"
-        - "03｜UI / Stitch"
-        - "04｜Development"
-        - "05｜QA & Release"
+        - 01｜Requirements & Business Rules
+        - 02｜Architecture
+        - 03｜UI / Stitch
+        - 04｜Development
+        - 05｜QA & Release
     validations:
       required: true
   - type: dropdown
     id: initial_status
     attributes:
-      label: "Initial status"
+      label: Initial status
       options:
-        - "BACKLOG"
-        - "READY"
-        - "IN PROGRESS"
-        - "IN REVIEW"
-        - "BLOCKED"
+        - BACKLOG
+        - READY
+        - IN PROGRESS
+        - IN REVIEW
+        - BLOCKED
     validations:
       required: true
   - type: textarea
     id: dependencies
     attributes:
-      label: "Dependencies / start gates"
-      description: "Reference DEV IDs, Issue/PR links, UI Spec or architecture decisions; write None if not applicable."
-      placeholder: "DEV-002 final acceptance and merge"
+      label: Dependencies / start gates
+      description: Reference DEV IDs, Issue/PR links, UI Spec or architecture decisions; write None if not applicable.
+      placeholder: DEV-002 final acceptance and merge
     validations:
       required: true
   - type: textarea
     id: sources
     attributes:
-      label: "Authoritative references"
-      description: "Link relevant AGENTS.md, docs sections and business-rule IDs."
+      label: Authoritative references
+      description: Link relevant AGENTS.md, docs sections and business-rule IDs.
     validations:
       required: true
   - type: textarea
     id: scope
     attributes:
-      label: "Scope"
-      description: "Precisely define what this task implements or reviews."
+      label: Scope
+      description: Precisely define what this task implements or reviews.
     validations:
       required: true
   - type: textarea
     id: out_of_scope
     attributes:
-      label: "Out of scope"
-      description: "Explicitly exclude premature features and unsafe operations."
+      label: Out of scope
+      description: Explicitly exclude premature features and unsafe operations.
     validations:
       required: true
   - type: textarea
     id: acceptance
     attributes:
-      label: "Acceptance criteria"
-      description: "Use Markdown checkboxes; distinguish automated CI from real-environment QA."
+      label: Acceptance criteria
+      description: Use Markdown checkboxes; distinguish automated CI from real-environment QA.
       value: |
         - [ ] Scope-specific acceptance criteria
         - [ ] lint / test / build / CI (if applicable)
@@ -81,14 +81,14 @@ body:
   - type: textarea
     id: linked_pr
     attributes:
-      label: "Linked PR / evidence"
-      description: "Link existing PR if available; otherwise write Pending."
+      label: Linked PR / evidence
+      description: Link existing PR if available; otherwise write Pending.
     validations:
       required: false
   - type: textarea
     id: decision
     attributes:
-      label: "00 control decision"
-      description: "Initial authorization or constraints. Final acceptance is recorded later in a comment."
+      label: 00 control decision
+      description: Initial authorization or constraints. Final acceptance is recorded later in a comment.
     validations:
       required: false
