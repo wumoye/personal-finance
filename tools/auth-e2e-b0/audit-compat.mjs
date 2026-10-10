@@ -42,7 +42,6 @@ try {
   report.baseline.auditAll = audit('all');
   report.baseline.auditProd = audit('prod');
   report.baseline.prisma = step('db validate', 'npm', ['run', 'db:validate']);
-  const packages = ['prisma@7.10.0', '@prisma/client@7.10.0'];
   report.candidate.strategy = 'same-parent-major-with-transitive-overrides';
   report.candidate.packages = ['deepmerge-ts@8.0.2', 'mysql2@3.24.5'];
   report.candidate.override = step('npm pkg set', 'npm', ['pkg', 'set', 'overrides.deepmerge-ts=8.0.2', 'overrides.mysql2=3.24.5']);
