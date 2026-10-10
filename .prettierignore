@@ -1,0 +1,9 @@
+node_modules/
+.next/
+coverage/
+src/generated/
+package-lock.json
+next-env.d.ts
+AGENTS.md
+docs/
+prisma/schema.prisma
