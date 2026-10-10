@@ -1,0 +1,47 @@
+name: DEV-002 ephemeral candidate lockfile export
+on:
+  push:
+    branches: [infra/dev002-lock-export]
+    paths:
+      - .github/workflows/dev002-lock-export.yml
+permissions:
+  contents: read
+jobs:
+  generate:
+    if: github.repository == 'wumoye/personal-finance' && github.event_name == 'push' && github.ref == 'refs/heads/infra/dev002-lock-export'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout fixed PR 3 HEAD
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          persist-credentials: false
+          path: source
+      - name: Assert immutable code reference
+        run: test "$(git -C source rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.19.0
+      - name: Generate exact minimal A override in ephemeral directory
+        working-directory: source
+        run: |
+          npm pkg set overrides.deepmerge-ts=8.0.2 overrides.mysql2=3.24.5
+          npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+          node -e "const p=require('./package.json');if(p.devDependencies.prisma!=='7.10.0'||p.dependencies['@prisma/client']!=='7.10.0'||p.overrides['deepmerge-ts']!=='8.0.2'||p.overrides.mysql2!=='3.24.5')process.exit(1)"
+          npm ci --no-fund --no-audit
+      - name: Verify candidate resolution and lockfile changes
+        working-directory: source
+        run: |
+          node -e "const l=require('./package-lock.json');const p=l.packages;if(l.lockfileVersion!==3||p['node_modules/deepmerge-ts'].version!=='8.0.2'||p['node_modules/mysql2'].version!=='3.24.5'||p['node_modules/prisma'].version!=='7.10.0'||p['node_modules/@prisma/client'].version!=='7.10.0')process.exit(1)"
+          sha256sum package.json package-lock.json
+          git diff --stat -- package.json package-lock.json
+      - name: Export only candidate package files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev002-locked-candidate-${{ github.sha }}
+          path: |
+            source/package.json
+            source/package-lock.json
+          retention-days: 3
+          if-no-files-found: error
