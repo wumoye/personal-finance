@@ -89,6 +89,6 @@ body:
     id: decision
     attributes:
       label: 00 control decision
-      description: Record initial authorization. Final acceptance goes in a comment.
+      description: Record authorization; final acceptance goes in a comment.
     validations:
       required: false
