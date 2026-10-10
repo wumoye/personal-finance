@@ -1,0 +1,67 @@
+name: DEV-002 Phase B-0 (credential-free)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [infra/dev002-phase-b0]
+    paths:
+      - .github/workflows/auth-e2e-b0.yml
+      - tools/auth-e2e-b0/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auth-b0-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: >-
+      github.repository == 'wumoye/personal-finance' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/infra/dev002-phase-b0'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout audited workflow commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.19.0
+      - name: Verify exact trusted checkout and absence of authentication inputs
+        env:
+          EXPECTED_HEAD: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          node tools/auth-e2e-b0/check-boundary.mjs
+      - name: Install locked browser smoke dependencies
+        working-directory: tools/infra-qa
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: tools/infra-qa
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Credential-free browser and evidence smoke
+        env:
+          B0_REPORT_DIR: ${{ runner.temp }}/auth-b0-report
+          EXPECTED_HEAD: ${{ github.sha }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: node tools/auth-e2e-b0/smoke.mjs
+      - name: Verify allowlisted evidence
+        if: always()
+        env:
+          B0_REPORT_DIR: ${{ runner.temp }}/auth-b0-report
+        run: node tools/auth-e2e-b0/check-evidence.mjs
+      - name: Upload only allowlisted JSON
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: auth-b0-${{ github.sha }}
+          path: ${{ runner.temp }}/auth-b0-report/b0-summary.json
+          if-no-files-found: error
+          retention-days: 7
