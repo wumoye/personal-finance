@@ -46,11 +46,19 @@ jobs:
         env:
           AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
         run: node harness-source/tools/dev002-ab/experiment.mjs
-      - name: Upload JSON only
-        if: always()
+      - name: Supplement Prisma internal paths and dependency evidence
+        env:
+          AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
+        run: node harness-source/tools/dev002-ab/supplement.mjs
+      - name: Enforce fail-closed evidence allowlist
+        env:
+          AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
+        run: node harness-source/tools/dev002-ab/evidence-gate.mjs
+      - name: Upload validated JSON only
+        if: success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: dev002-ab-${{ github.sha }}
           path: ${{ runner.temp }}/dev002-ab-evidence/ab-result.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 7
