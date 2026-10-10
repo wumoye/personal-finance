@@ -1,0 +1,66 @@
+name: DEV-002 credential-free Prisma A-B compatibility
+
+on:
+  push:
+    branches: [infra/dev002-ab-behavior]
+    paths:
+      - '.github/workflows/dev002-ab.yml'
+      - 'tools/dev002-ab/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev002-ab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    if: github.repository == 'wumoye/personal-finance' && github.event_name == 'push' && github.ref == 'refs/heads/infra/dev002-ab-behavior'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Checkout fixed PR 3 baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          path: auth-source
+          persist-credentials: false
+      - name: Checkout current approved no-secret harness
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: harness-source
+          persist-credentials: false
+      - name: Verify immutable checkout SHAs
+        env:
+          HARNESS_SHA: ${{ github.sha }}
+        run: |
+          test "$(git -C auth-source rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          test "$(git -C harness-source rev-parse HEAD)" = "$HARNESS_SHA"
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.19.0
+      - name: Self-test evidence whitelist before any long experiment
+        run: node harness-source/tools/dev002-ab/evidence-gate.mjs --self-test-only
+      - name: Run isolated A-B experiments
+        env:
+          AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
+        run: node harness-source/tools/dev002-ab/experiment.mjs
+      - name: Supplement Prisma internal paths and dependency evidence
+        env:
+          AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
+        run: node harness-source/tools/dev002-ab/supplement.mjs
+      - name: Enforce fail-closed evidence allowlist
+        env:
+          AB_EVIDENCE_DIR: ${{ runner.temp }}/dev002-ab-evidence
+        run: node harness-source/tools/dev002-ab/evidence-gate.mjs
+      - name: Upload validated JSON only
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev002-ab-${{ github.sha }}
+          path: ${{ runner.temp }}/dev002-ab-evidence/ab-result.json
+          if-no-files-found: error
+          retention-days: 7
