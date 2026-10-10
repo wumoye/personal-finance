@@ -25,8 +25,9 @@ jobs:
         with:
           persist-credentials: false
           ref: b7e0d271d575577d1f5c74a3a66d7383aa74e793
+          path: auth-snapshot
       - name: Verify audited auth head
-        run: test "$(git rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
+        run: test "$(git -C auth-snapshot rev-parse HEAD)" = b7e0d271d575577d1f5c74a3a66d7383aa74e793
       - name: Checkout B-0 assessment script to separate verified directory
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -44,7 +45,8 @@ jobs:
       - name: Audit baseline and ephemeral candidate
         env:
           B0_AUDIT_REPORT_DIR: ${{ runner.temp }}/auth-b0-audit
-        run: node b0-trusted-scripts/tools/auth-e2e-b0/audit-compat.mjs
+        working-directory: auth-snapshot
+        run: node ../b0-trusted-scripts/tools/auth-e2e-b0/audit-compat.mjs
       - name: Upload summary only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
