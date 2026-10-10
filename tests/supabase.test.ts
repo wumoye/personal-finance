@@ -17,6 +17,15 @@ describe('Supabase configuration', () => {
     expect(() => getSupabaseConfig()).toThrow('HTTPS');
   });
 
+  it('rejects a Supabase secret key in public configuration', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv(
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+      'sb_secret_test-placeholder',
+    );
+    expect(() => getSupabaseConfig()).toThrow('cannot use a secret key');
+  });
+
   it('creates a client without making requests or persisting a session', () => {
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'test-publishable-key');
