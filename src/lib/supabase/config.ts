@@ -6,6 +6,9 @@ export function getSupabaseConfig() {
       'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are required.',
     );
   }
+  if (publishableKey.startsWith('sb_secret_')) {
+    throw new Error('Supabase public configuration cannot use a secret key.');
+  }
   if (new URL(url).protocol !== 'https:') {
     throw new Error('Supabase URL must use HTTPS.');
   }

@@ -1,19 +1,33 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/proxy';
-import { safeNextPath } from '@/lib/auth/route-guard';
+import { isProtectedPath, safeNextPath } from '@/lib/auth/route-guard';
 
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
-  if (!user && request.nextUrl.pathname.startsWith('/private')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.search = '';
-    url.searchParams.set('next', safeNextPath(request.nextUrl.pathname));
-    const redirectResponse = NextResponse.redirect(url);
-    response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
-    return redirectResponse;
+  let target: URL | undefined;
+  if (!user && isProtectedPath(request.nextUrl.pathname)) {
+    target = new URL('/login', request.url);
+    target.searchParams.set(
+      'next',
+      safeNextPath(`${request.nextUrl.pathname}${request.nextUrl.search}`),
+    );
+  } else if (user && request.nextUrl.pathname === '/login') {
+    target = new URL(
+      safeNextPath(request.nextUrl.searchParams.get('next')),
+      request.url,
+    );
   }
-  return response;
+  if (!target) return response;
+
+  const redirectResponse = NextResponse.redirect(target);
+  response.cookies
+    .getAll()
+    .forEach((cookie) => redirectResponse.cookies.set(cookie));
+  for (const key of ['cache-control', 'expires', 'pragma']) {
+    const value = response.headers.get(key);
+    if (value) redirectResponse.headers.set(key, value);
+  }
+  return redirectResponse;
 }
 
-export const config = { matcher: ['/private/:path*', '/login', '/auth/:path*'] };
+export const config = { matcher: ['/private/:path*', '/login'] };

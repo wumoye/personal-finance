@@ -1,10 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { safeNextPath } from '@/lib/auth/route-guard';
+import { isProtectedPath, safeNextPath } from '@/lib/auth/route-guard';
 
 describe('safeNextPath', () => {
-  it('defaults to the protected route', () => expect(safeNextPath(null)).toBe('/private'));
-  it('keeps local paths', () => expect(safeNextPath('/private')).toBe('/private'));
-  it('blocks protocol-relative redirects', () => expect(safeNextPath('//evil.example')).toBe('/private'));
-  it('blocks absolute external redirects', () => expect(safeNextPath('https://evil.example')).toBe('/private'));
-  it('blocks backslash redirects', () => expect(safeNextPath('/\\evil.example')).toBe('/private'));
+  it.each([
+    null,
+    undefined,
+    ['//evil.example'],
+    42,
+    '',
+    'https://evil.example',
+    '//evil.example',
+    '/\\evil.example',
+    '/\n/evil.example',
+    '/private/../../login',
+    '/private/../../%2f%2fevil.example',
+    '/login',
+    '/private-other',
+    '/%70rivate',
+  ])('blocks unsafe, non-string, or unprotected destinations: %j', (value) => {
+    expect(safeNextPath(value)).toBe('/private');
+  });
+  it('preserves a protected destination with query and fragment', () => {
+    expect(safeNextPath('/private/nested?tab=a%20b#detail')).toBe(
+      '/private/nested?tab=a%20b#detail',
+    );
+  });
+});
+
+describe('protected path boundary', () => {
+  it.each(['/private', '/private/', '/private/nested'])('protects %s', (path) =>
+    expect(isProtectedPath(path)).toBe(true),
+  );
+  it.each(['/', '/login', '/private-other'])(
+    'does not confuse %s with a protected route',
+    (path) => expect(isProtectedPath(path)).toBe(false),
+  );
 });
