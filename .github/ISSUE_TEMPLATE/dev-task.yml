@@ -1,0 +1,94 @@
+name: DEV Task
+description: Standard task template for Personal Finance Manager
+title: 'DEV-XXX — '
+body:
+  - type: markdown
+    attributes:
+      value: Use a DEV number from the development plan. Never include secrets.
+  - type: input
+    id: task_id
+    attributes:
+      label: Task ID
+      description: Stable identifier, e.g. DEV-003
+      placeholder: DEV-003
+    validations:
+      required: true
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Responsible domain
+      options:
+        - 01｜Requirements & Business Rules
+        - 02｜Architecture
+        - 03｜UI / Stitch
+        - 04｜Development
+        - 05｜QA & Release
+    validations:
+      required: true
+  - type: dropdown
+    id: initial_status
+    attributes:
+      label: Initial status
+      options:
+        - BACKLOG
+        - READY
+        - IN PROGRESS
+        - IN REVIEW
+        - BLOCKED
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / start gates
+      description: List prerequisite DEV IDs, Issues, PRs or decisions.
+      placeholder: DEV-002 final acceptance and merge
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Authoritative references
+      description: Link relevant AGENTS.md, docs sections and business-rule IDs.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Precisely define what this task implements or reviews.
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Explicitly exclude premature features and unsafe operations.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use checkboxes. Distinguish CI from live QA.
+      value: |
+        - [ ] Scope-specific acceptance criteria
+        - [ ] lint / test / build / CI (if applicable)
+        - [ ] Independent QA evidence (if applicable)
+        - [ ] 00 final approval
+    validations:
+      required: true
+  - type: textarea
+    id: linked_pr
+    attributes:
+      label: Linked PR / evidence
+      description: Link existing PR if available; otherwise write Pending.
+    validations:
+      required: false
+  - type: textarea
+    id: decision
+    attributes:
+      label: 00 control decision
+      description: Record authorization; final acceptance goes in a comment.
+    validations:
+      required: false
