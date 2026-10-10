@@ -1,0 +1,50 @@
+name: INFRA-QA-001 Phase A
+
+on:
+  workflow_dispatch:
+  # Bootstrap only: a new workflow cannot be manually dispatched until it is
+  # present on the default branch. No PR trigger and no Secrets are used.
+  push:
+    branches: [infra/infra-qa-001-phase-a]
+    paths:
+      - .github/workflows/infra-qa-phase-a.yml
+      - tools/infra-qa/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-qa-phase-a-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  feasibility:
+    if: github.repository == 'wumoye/personal-finance' && github.ref == 'refs/heads/infra/infra-qa-001-phase-a'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.19.0
+      - name: Install isolated pinned diagnostics dependencies
+        working-directory: tools/infra-qa
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium and OS dependencies
+        working-directory: tools/infra-qa
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Chromium about and credential-free DEV health
+        if: always()
+        env:
+          INFRA_QA_OUTPUT: ${{ runner.temp }}/infra-qa-evidence
+        run: node tools/infra-qa/phase-a.mjs
+      - name: Upload allowlisted diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: infra-qa-phase-a-${{ github.sha }}
+          path: ${{ runner.temp }}/infra-qa-evidence/phase-a.json
+          if-no-files-found: warn
+          retention-days: 7
