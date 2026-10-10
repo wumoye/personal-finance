@@ -1,0 +1,52 @@
+name: DEV-002 candidate dependency review checks
+on:
+  push:
+    branches: [infra/dev002-lock-export]
+    paths:
+      - .github/workflows/dev002-candidate-check.yml
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'wumoye/personal-finance' && github.ref == 'refs/heads/infra/dev002-lock-export' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate HEAD
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: 1d8bed2ba11c9d2e64482d2b48b278f0147650cb
+      - name: Assert tested candidate SHA
+        run: test "$(git rev-parse HEAD)" = 1d8bed2ba11c9d2e64482d2b48b278f0147650cb
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.19.0
+      - name: Clean npm ci with lockfile
+        run: npm ci --no-fund --no-audit
+      - name: Verify exact runtime dependency versions
+        run: |
+          node -e "let p=require('./package.json'),l=require('./package-lock.json').packages;if(p.dependencies['@prisma/client']!=='7.10.0'||p.devDependencies.prisma!=='7.10.0'||p.overrides['deepmerge-ts']!=='8.0.2'||p.overrides.mysql2!=='3.24.5'||l['node_modules/deepmerge-ts'].version!=='8.0.2'||l['node_modules/mysql2'].version!=='3.24.5')process.exit(1)"
+          npm ls deepmerge-ts mysql2 @prisma/config prisma @prisma/client --all
+          sha256sum package.json package-lock.json
+      - name: Audit full and production dependency graphs (aggregated only)
+        run: |
+          node --input-type=module -e "import {spawnSync} from 'node:child_process';for(const prod of [false,true]){let a=['audit','--json',...(prod?['--omit=dev']:[])],r=spawnSync('npm',a,{encoding:'utf8',maxBuffer:8e6});let j=JSON.parse(r.stdout),v=j.metadata.vulnerabilities;console.log(JSON.stringify({graph:prod?'production':'full',exit:r.status,high:v.high,critical:v.critical,nodes:Object.keys(j.vulnerabilities||{}).sort()}));if(prod&&(v.high||v.critical))process.exitCode=1}"
+      - name: Prisma validation and generation without database
+        env:
+          DIRECT_URL: ''
+          DATABASE_URL: ''
+        run: |
+          npm run db:validate
+          npm run db:generate
+      - name: Lint / typecheck / tests / build
+        env:
+          DIRECT_URL: ''
+          DATABASE_URL: ''
+          NEXT_PUBLIC_SUPABASE_URL: ''
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ''
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run test
+          npm run build
