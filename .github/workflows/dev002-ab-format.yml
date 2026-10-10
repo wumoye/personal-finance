@@ -21,6 +21,8 @@ jobs:
           node-version: 24.19.0
       - run: npm ci --ignore-scripts --no-fund --no-audit
       - run: npx --no-install prettier --write tools/dev002-ab/experiment.mjs
+      - name: Output safe formatted harness payload
+        run: node -e "console.log('FORMAT_PAYLOAD_START'+JSON.stringify(require('fs').readFileSync('tools/dev002-ab/experiment.mjs','utf8'))+'FORMAT_PAYLOAD_END')"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: dev002-ab-format-${{ github.sha }}
