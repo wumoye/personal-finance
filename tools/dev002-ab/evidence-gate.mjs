@@ -290,6 +290,10 @@ try {
     }
     assert(rejected, 'negative self test failed');
   }
+  if (process.argv.includes('--self-test-only')) {
+    console.log('Evidence gate self-tests PASS');
+    process.exit(0);
+  }
   const names = readdirSync(dir);
   assert(
     names.length === 1 && names[0] === 'ab-result.json',
